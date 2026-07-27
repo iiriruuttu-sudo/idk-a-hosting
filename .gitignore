@@ -1,0 +1,5 @@
+node_modules/
+deploys.json
+*.log
+.env
+.DS_Store
