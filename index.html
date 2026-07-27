@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PaltidxR Deploy - Deploy your project</title>
+    <title>Host Cloud - Script Hosting & Deploy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
@@ -13,19 +13,12 @@
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
             color: #e0e0e0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
         }
         .glass-card {
             background: rgba(20, 21, 31, 0.85);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 24px;
-            padding: 40px;
-            max-width: 700px;
-            width: 100%;
+            border-radius: 20px;
         }
         .glass-input {
             background: rgba(9, 10, 18, 0.8);
@@ -73,9 +66,29 @@
             cursor: pointer;
             width: auto;
         }
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.08);
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.08); }
+        .code-editor {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            min-height: 200px;
+            resize: vertical;
         }
+        .tab-active {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: rgba(139, 92, 246, 0.3);
+            color: white;
+        }
+        .tab-inactive {
+            background: transparent;
+            border-color: transparent;
+            color: #6b7280;
+        }
+        .tab-inactive:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+        }
+        .section-hidden { display: none; }
         .badge {
             display: inline-block;
             padding: 4px 12px;
@@ -84,35 +97,6 @@
             border-radius: 20px;
             font-size: 11px;
             color: #34d399;
-        }
-        .domain-option {
-            display: inline-block;
-            padding: 6px 16px;
-            background: rgba(139, 92, 246, 0.08);
-            border: 1px solid rgba(139, 92, 246, 0.12);
-            border-radius: 20px;
-            font-size: 13px;
-            color: #a78bfa;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .domain-option:hover { background: rgba(139, 92, 246, 0.15); }
-        .domain-option.active {
-            background: rgba(139, 92, 246, 0.2);
-            border-color: rgba(139, 92, 246, 0.3);
-        }
-        .result-box {
-            background: rgba(9, 10, 18, 0.8);
-            border: 1px solid rgba(52, 211, 153, 0.2);
-            border-radius: 12px;
-            padding: 16px 20px;
-            margin-top: 16px;
-            word-break: break-all;
-        }
-        .result-box .url {
-            color: #34d399;
-            font-size: 14px;
-            font-family: 'Courier New', monospace;
         }
         .toast {
             position: fixed;
@@ -142,14 +126,25 @@
             margin-right: 10px;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .hidden { display: none; }
+        .result-box {
+            background: rgba(9, 10, 18, 0.8);
+            border: 1px solid rgba(52, 211, 153, 0.2);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-top: 16px;
+            word-break: break-all;
+        }
+        .result-box .url {
+            color: #34d399;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
         .status-bar {
             height: 4px;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 4px;
             margin-top: 12px;
             overflow: hidden;
-            position: relative;
         }
         .status-bar .progress {
             height: 100%;
@@ -158,12 +153,7 @@
             transition: width 0.5s ease;
             border-radius: 4px;
         }
-        .status-text {
-            font-size: 12px;
-            color: #6b7280;
-            margin-top: 6px;
-            text-align: center;
-        }
+        .status-text { font-size: 12px; color: #6b7280; margin-top: 6px; text-align: center; }
         select.glass-input {
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
@@ -172,145 +162,266 @@
             padding-right: 36px;
         }
         select.glass-input option { background: #1a1b2e; color: #e0e0e0; }
+        .domain-option {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(139, 92, 246, 0.08);
+            border: 1px solid rgba(139, 92, 246, 0.12);
+            border-radius: 20px;
+            font-size: 13px;
+            color: #a78bfa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .domain-option:hover { background: rgba(139, 92, 246, 0.15); }
+        .domain-option.active {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
     </style>
 </head>
 <body>
 
-    <div class="glass-card">
-        <div class="text-center mb-6">
-            <div class="text-5xl mb-2">
-                <i class="fa-solid fa-shield-halved text-indigo-400"></i>
-            </div>
-            <h1 class="text-white font-bold text-2xl">PaltidxR Deploy</h1>
-            <p class="text-zinc-400 text-sm">Deploy your GitHub repository to the cloud</p>
-        </div>
-
-        <!-- GitHub Token -->
-        <div class="mb-4">
-            <label class="text-xs text-zinc-400 block mb-1">
-                <i class="fa-brands fa-github mr-1"></i> GitHub Token
-            </label>
-            <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="glass-input" />
-            <p class="text-[10px] text-zinc-500 mt-1">
-                Create at 
-                <a href="https://github.com/settings/tokens" target="_blank" class="text-indigo-400 hover:underline">
-                    github.com/settings/tokens
-                </a>
-                (needs <strong>repo</strong> and <strong>workflow</strong> scopes)
-            </p>
-        </div>
-
-        <!-- Repository -->
-        <div class="mb-4">
-            <label class="text-xs text-zinc-400 block mb-1">
-                <i class="fa-regular fa-folder-open mr-1"></i> Repository
-            </label>
-            <input type="text" id="repoName" placeholder="username/repository" value="iriruuttu-sudo/paltidxr" class="glass-input" />
-        </div>
-
-        <!-- Branch -->
-        <div class="mb-4">
-            <label class="text-xs text-zinc-400 block mb-1">
-                <i class="fa-solid fa-code-branch mr-1"></i> Branch
-            </label>
-            <select id="repoBranch" class="glass-input">
-                <option value="main">main</option>
-                <option value="master">master</option>
-                <option value="develop">develop</option>
-            </select>
-        </div>
-
-        <!-- Hosting Platform -->
-        <div class="mb-4">
-            <label class="text-xs text-zinc-400 block mb-1">
-                <i class="fa-solid fa-server mr-1"></i> Hosting Platform
-            </label>
-            <select id="hostingPlatform" class="glass-input">
-                <option value="render">Render</option>
-                <option value="railway">Railway</option>
-                <option value="cyclic">Cyclic</option>
-                <option value="fly">Fly.io</option>
-            </select>
-        </div>
-
-        <!-- Domain Selection -->
-        <div class="mb-4">
-            <label class="text-xs text-zinc-400 block mb-1">
-                <i class="fa-solid fa-globe mr-1"></i> Domain
-            </label>
-            <div class="flex flex-wrap gap-2 mb-2">
-                <span class="domain-option active" data-domain="cloud">.cloud</span>
-                <span class="domain-option" data-domain="host">.host</span>
-                <span class="domain-option" data-domain="dev">.dev</span>
-                <span class="domain-option" data-domain="app">.app</span>
-                <span class="domain-option" data-domain="xyz">.xyz</span>
-                <span class="domain-option" data-domain="io">.io</span>
-            </div>
-            <div class="flex gap-2">
-                <input type="text" id="customSubdomain" placeholder="subdomain" value="paltidxr" class="glass-input" style="flex:2;" />
-                <span class="text-zinc-500 text-sm flex items-center px-2">.</span>
-                <input type="text" id="customDomain" placeholder="domain" value="paltidxr" class="glass-input" style="flex:2;" />
-            </div>
-            <p class="text-[10px] text-zinc-500 mt-1">
-                Your URL: <span id="previewUrl" class="text-indigo-400 font-mono">paltidxr.paltidxr.cloud</span>
-            </p>
-        </div>
-
-        <!-- Deploy Button -->
-        <button id="deployBtn" class="btn-primary">
-            <i class="fa-solid fa-rocket mr-2"></i>
-            Deploy Project
-        </button>
-
-        <!-- Status Bar -->
-        <div id="statusContainer" class="hidden mt-4">
-            <div class="status-bar">
-                <div id="progressBar" class="progress"></div>
-            </div>
-            <p id="statusText" class="status-text">Initializing deployment...</p>
-        </div>
-
-        <!-- Result -->
-        <div id="resultArea" class="hidden mt-4">
-            <div class="result-box">
-                <p class="text-xs text-emerald-400 font-medium mb-1">
-                    <i class="fa-regular fa-circle-check mr-1"></i> Deployment Successful!
-                </p>
-                <p class="text-xs text-zinc-400 mb-2">Your code has been deployed and successfully added to the domain:</p>
-                <div class="flex items-center justify-between gap-2">
-                    <code id="deployedUrl" class="url text-sm">https://paltidxr.paltidxr.cloud</code>
-                    <button onclick="copyUrl()" class="btn-secondary text-xs px-3 py-1 rounded-lg text-zinc-300">
-                        <i class="fa-regular fa-copy mr-1"></i> Copy
-                    </button>
+    <!-- ============ HEADER ============ -->
+    <header class="border-b border-white/5 sticky top-0 z-50" style="background: rgba(10, 11, 18, 0.9); backdrop-filter: blur(20px);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg bg-indigo-600/10 border border-indigo-500/20 flex items-center justify-center">
+                        <i class="fa-solid fa-cloud text-indigo-400 text-sm"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-white font-bold text-lg tracking-tight">Host Cloud</h1>
+                        <p class="text-zinc-500 text-[10px] -mt-0.5">Script Hosting & Deploy</p>
+                    </div>
                 </div>
-                <div class="flex gap-2 mt-2 flex-wrap">
-                    <span class="text-[10px] text-zinc-500">
-                        <i class="fa-regular fa-clock mr-1"></i> 
-                        <span id="deployTime">Just now</span>
-                    </span>
-                    <span class="text-[10px] text-zinc-500">
-                        <i class="fa-solid fa-server mr-1"></i> 
-                        <span id="deployPlatform">Render</span>
-                    </span>
-                    <span class="text-[10px] text-zinc-500">
-                        <i class="fa-solid fa-code-branch mr-1"></i> 
-                        <span id="deployBranch">main</span>
-                    </span>
-                </div>
-                <div class="mt-3 p-3 bg-indigo-600/5 border border-indigo-500/10 rounded-lg">
-                    <p class="text-[10px] text-zinc-400">
-                        <i class="fa-regular fa-lightbulb mr-1"></i>
-                        Your project is now live! Share this URL with anyone.
-                    </p>
+                <div class="flex items-center gap-4">
+                    <span class="status-dot online"></span>
+                    <span class="text-xs text-zinc-400">host.cloud</span>
                 </div>
             </div>
-            <button onclick="resetForm()" class="btn-secondary w-full mt-3 py-2 text-sm">
-                <i class="fa-solid fa-rotate-left mr-1"></i> Deploy Another Project
+        </div>
+    </header>
+
+    <!-- ============ TABS ============ -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <div class="flex gap-2 border-b border-white/5 pb-2 overflow-x-auto">
+            <button onclick="showSection('hosting')" id="tabHosting" class="tab-active px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border whitespace-nowrap">
+                <i class="fa-solid fa-file-code mr-2"></i>Host Script
+            </button>
+            <button onclick="showSection('deploy')" id="tabDeploy" class="tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border whitespace-nowrap">
+                <i class="fa-solid fa-rocket mr-2"></i>Deploy Project
+            </button>
+            <button onclick="showSection('dashboard')" id="tabDashboard" class="tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border whitespace-nowrap">
+                <i class="fa-solid fa-gauge-high mr-2"></i>Dashboard
             </button>
         </div>
     </div>
 
-    <!-- Toast -->
+    <!-- ============ SECCIÓN HOSTING ============ -->
+    <section id="sectionHosting" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="glass-card p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-white font-semibold text-lg">Host Script</h2>
+                    <p class="text-zinc-500 text-xs">Upload and protect your Lua scripts</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-zinc-500">Script Name:</span>
+                    <input type="text" id="urlName" placeholder="my-script" class="glass-input text-xs px-3 py-1.5 w-32" />
+                </div>
+            </div>
+            <div class="relative">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-zinc-400">Code</span>
+                        <span class="text-[10px] text-zinc-600">Lua</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label for="fileUpload" class="btn-secondary text-xs px-3 py-1.5 rounded-lg text-zinc-300 cursor-pointer hover:text-white">
+                            <i class="fa-solid fa-upload mr-1.5"></i> Upload
+                        </label>
+                        <input type="file" id="fileUpload" accept=".lua" class="hidden" />
+                        <span class="text-[10px] text-zinc-600">or paste below</span>
+                    </div>
+                </div>
+                <textarea id="scriptInput" class="glass-input code-editor w-full p-4" 
+                          placeholder="-- Paste your Lua script here to host and protect"
+                          spellcheck="false"></textarea>
+            </div>
+            <button id="createUrlBtn" class="btn-primary w-full mt-4 py-3 rounded-xl text-white font-medium text-sm flex items-center justify-center gap-2">
+                <i class="fa-solid fa-link"></i> Create Protected URL
+            </button>
+            <div id="resultArea" class="mt-4 hidden">
+                <div class="bg-emerald-600/5 border border-emerald-500/20 rounded-xl p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-emerald-400 font-medium">Script Hosted Successfully!</p>
+                            <p class="text-xs text-zinc-400 mt-1">Your URL is ready</p>
+                        </div>
+                        <button onclick="copyUrl()" class="btn-secondary text-xs px-3 py-1.5 rounded-lg text-zinc-300">
+                            <i class="fa-regular fa-copy mr-1.5"></i> Copy
+                        </button>
+                    </div>
+                    <div class="mt-2 bg-black/30 rounded-lg p-3">
+                        <code id="generatedUrl" class="text-xs text-zinc-300 break-all font-mono"></code>
+                    </div>
+                    <div class="mt-3 flex gap-2">
+                        <button onclick="copyLoaderString()" class="btn-secondary text-xs px-3 py-1.5 rounded-lg text-zinc-300">
+                            <i class="fa-regular fa-copy mr-1.5"></i> Copy Loader
+                        </button>
+                        <span class="text-[10px] text-zinc-500 flex items-center">loadstring(game:HttpGet(url))()</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SECCIÓN DEPLOY ============ -->
+    <section id="sectionDeploy" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 section-hidden">
+        <div class="glass-card p-6">
+            <div class="text-center mb-4">
+                <h2 class="text-white font-semibold text-lg">Deploy Project</h2>
+                <p class="text-zinc-500 text-xs">Deploy your GitHub repository to <strong>host.cloud</strong></p>
+            </div>
+
+            <div class="mb-4">
+                <label class="text-xs text-zinc-400 block mb-1">
+                    <i class="fa-brands fa-github mr-1"></i> GitHub Token
+                </label>
+                <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="glass-input" />
+                <p class="text-[10px] text-zinc-500 mt-1">
+                    Create at <a href="https://github.com/settings/tokens" target="_blank" class="text-indigo-400 hover:underline">github.com/settings/tokens</a>
+                    (needs <strong>repo</strong> and <strong>workflow</strong> scopes)
+                </p>
+            </div>
+
+            <div class="mb-4">
+                <label class="text-xs text-zinc-400 block mb-1">
+                    <i class="fa-regular fa-folder-open mr-1"></i> Repository
+                </label>
+                <input type="text" id="repoName" placeholder="username/repository" value="iriruuttu-sudo/paltidxr" class="glass-input" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div class="mb-3">
+                    <label class="text-xs text-zinc-400 block mb-1">
+                        <i class="fa-solid fa-code-branch mr-1"></i> Branch
+                    </label>
+                    <select id="repoBranch" class="glass-input">
+                        <option value="main">main</option>
+                        <option value="master">master</option>
+                        <option value="develop">develop</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="text-xs text-zinc-400 block mb-1">
+                        <i class="fa-solid fa-server mr-1"></i> Platform
+                    </label>
+                    <select id="hostingPlatform" class="glass-input">
+                        <option value="render">Render</option>
+                        <option value="railway">Railway</option>
+                        <option value="cyclic">Cyclic</option>
+                        <option value="fly">Fly.io</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="text-xs text-zinc-400 block mb-1">
+                    <i class="fa-solid fa-globe mr-1"></i> Subdomain
+                </label>
+                <div class="flex flex-wrap gap-2 mb-2">
+                    <span class="domain-option active" data-domain="host.cloud">.host.cloud</span>
+                    <span class="domain-option" data-domain="cloud">.cloud</span>
+                    <span class="domain-option" data-domain="dev">.dev</span>
+                    <span class="domain-option" data-domain="app">.app</span>
+                    <span class="domain-option" data-domain="io">.io</span>
+                    <span class="domain-option" data-domain="xyz">.xyz</span>
+                </div>
+                <input type="text" id="projectName" placeholder="project-name" value="paltidxr" class="glass-input" />
+                <p class="text-[10px] text-zinc-500 mt-1">
+                    Your URL: <span id="previewUrl" class="text-indigo-400 font-mono">paltidxr.host.cloud</span>
+                </p>
+            </div>
+
+            <button id="deployBtn" class="btn-primary">
+                <i class="fa-solid fa-rocket mr-2"></i> Deploy to host.cloud
+            </button>
+
+            <div id="deployStatus" class="hidden mt-4">
+                <div class="status-bar">
+                    <div id="progressBar" class="progress"></div>
+                </div>
+                <p id="statusText" class="status-text">Initializing deployment...</p>
+            </div>
+
+            <div id="deployResult" class="hidden mt-4">
+                <div class="result-box">
+                    <p class="text-xs text-emerald-400 font-medium mb-1">
+                        <i class="fa-regular fa-circle-check mr-1"></i> Deployment Successful!
+                    </p>
+                    <p class="text-xs text-zinc-400 mb-2">Your code has been deployed to:</p>
+                    <div class="flex items-center justify-between gap-2">
+                        <code id="deployedUrl" class="url text-sm">https://paltidxr.host.cloud</code>
+                        <button onclick="copyDeployUrl()" class="btn-secondary text-xs px-3 py-1 rounded-lg text-zinc-300">
+                            <i class="fa-regular fa-copy mr-1"></i> Copy
+                        </button>
+                    </div>
+                </div>
+                <button onclick="resetDeploy()" class="btn-secondary w-full mt-3 py-2 text-sm">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> Deploy Another Project
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SECCIÓN DASHBOARD ============ -->
+    <section id="sectionDashboard" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 section-hidden">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="glass-card p-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-indigo-600/10 border border-indigo-500/20 flex items-center justify-center">
+                        <i class="fa-solid fa-file-code text-indigo-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-zinc-400">Scripts Hosted</p>
+                        <p class="text-2xl font-bold text-white" id="scriptCount">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card p-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-purple-600/10 border border-purple-500/20 flex items-center justify-center">
+                        <i class="fa-solid fa-rocket text-purple-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-zinc-400">Projects Deployed</p>
+                        <p class="text-2xl font-bold text-white" id="deployCount">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card p-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-emerald-600/10 border border-emerald-500/20 flex items-center justify-center">
+                        <i class="fa-solid fa-globe text-emerald-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-zinc-400">Active Domains</p>
+                        <p class="text-2xl font-bold text-white" id="domainCount">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="glass-card p-6 mt-6">
+            <h3 class="text-sm font-semibold text-white mb-4">Recent Activity</h3>
+            <div id="recentActivity" class="space-y-2">
+                <p class="text-xs text-zinc-500">No activity yet.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ TOAST ============ -->
     <div id="toast" class="toast">
         <div class="flex items-center gap-3">
             <i id="toastIcon" class="fa-solid fa-check-circle text-emerald-400"></i>
@@ -319,30 +430,18 @@
     </div>
 
     <script>
-        // ============ DOMAIN SELECTION ============
-        const domainOptions = document.querySelectorAll('.domain-option');
-        const customSubdomain = document.getElementById('customSubdomain');
-        const customDomain = document.getElementById('customDomain');
-        const previewUrl = document.getElementById('previewUrl');
-
-        domainOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                domainOptions.forEach(o => o.classList.remove('active'));
-                this.classList.add('active');
-                updatePreview();
+        // ============ NAVEGACIÓN ============
+        function showSection(section) {
+            document.querySelectorAll('[id^="section"]').forEach(el => el.classList.add('section-hidden'));
+            document.getElementById('section' + section.charAt(0).toUpperCase() + section.slice(1)).classList.remove('section-hidden');
+            document.querySelectorAll('[id^="tab"]').forEach(el => {
+                el.classList.remove('tab-active');
+                el.classList.add('tab-inactive');
             });
-        });
-
-        customSubdomain.addEventListener('input', updatePreview);
-        customDomain.addEventListener('input', updatePreview);
-
-        function updatePreview() {
-            const sub = customSubdomain.value.trim() || 'paltidxr';
-            const dom = customDomain.value.trim() || 'paltidxr';
-            const ext = document.querySelector('.domain-option.active')?.dataset.domain || 'cloud';
-            previewUrl.textContent = `${sub}.${dom}.${ext}`;
+            const tab = document.getElementById('tab' + section.charAt(0).toUpperCase() + section.slice(1));
+            tab.classList.remove('tab-inactive');
+            tab.classList.add('tab-active');
         }
-        updatePreview();
 
         // ============ TOAST ============
         function showToast(message, type = 'success') {
@@ -362,51 +461,124 @@
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
-        // ============ COPY URL ============
+        // ============ FILE UPLOAD ============
+        document.getElementById('fileUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('scriptInput').value = event.target.result;
+                    showToast(`File "${file.name}" loaded!`, 'success');
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // ============ CREATE HOSTING URL ============
+        document.getElementById('createUrlBtn').addEventListener('click', async function() {
+            const script = document.getElementById('scriptInput').value.trim();
+            const urlName = document.getElementById('urlName').value.trim() || 'my-script';
+            
+            if (!script) {
+                showToast('Please paste or upload a script first.', 'error');
+                return;
+            }
+            
+            this.innerHTML = '<span class="loading-spinner"></span> Creating URL...';
+            this.disabled = true;
+            
+            try {
+                const response = await fetch('/api/scripts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ script, name: urlName })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('generatedUrl').textContent = data.url;
+                    document.getElementById('resultArea').classList.remove('hidden');
+                    showToast('URL created successfully!', 'success');
+                    fetchStats();
+                } else {
+                    showToast(data.error || 'Error creating URL', 'error');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            } finally {
+                this.innerHTML = '<i class="fa-solid fa-link"></i> Create Protected URL';
+                this.disabled = false;
+            }
+        });
+
+        // ============ COPY FUNCTIONS ============
         function copyUrl() {
+            const url = document.getElementById('generatedUrl').textContent;
+            copyToClipboard(url);
+        }
+
+        function copyLoaderString() {
+            const url = document.getElementById('generatedUrl').textContent;
+            const loader = `loadstring(game:HttpGet("${url}", true))()`;
+            copyToClipboard(loader);
+        }
+
+        function copyDeployUrl() {
             const url = document.getElementById('deployedUrl').textContent;
-            navigator.clipboard.writeText(url).then(() => {
-                showToast('URL copied to clipboard!', 'success');
+            copyToClipboard(url);
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Copied to clipboard!', 'success');
             }).catch(() => {
                 const textarea = document.createElement('textarea');
-                textarea.value = url;
+                textarea.value = text;
                 document.body.appendChild(textarea);
                 textarea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textarea);
-                showToast('URL copied to clipboard!', 'success');
+                showToast('Copied to clipboard!', 'success');
             });
         }
 
-        // ============ RESET FORM ============
-        function resetForm() {
-            document.getElementById('resultArea').classList.add('hidden');
-            document.getElementById('statusContainer').classList.add('hidden');
-            document.getElementById('progressBar').style.width = '0%';
-            document.getElementById('deployBtn').disabled = false;
-            document.getElementById('deployBtn').innerHTML = '<i class="fa-solid fa-rocket mr-2"></i> Deploy Project';
-        }
+        // ============ DEPLOY FUNCTIONS ============
+        const domainOptions = document.querySelectorAll('.domain-option');
+        const projectName = document.getElementById('projectName');
+        const previewUrl = document.getElementById('previewUrl');
 
-        // ============ UPDATE PROGRESS ============
+        domainOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                domainOptions.forEach(o => o.classList.remove('active'));
+                this.classList.add('active');
+                updatePreview();
+            });
+        });
+
+        projectName.addEventListener('input', updatePreview);
+
+        function updatePreview() {
+            const name = projectName.value.trim() || 'project';
+            const ext = document.querySelector('.domain-option.active')?.dataset.domain || 'host.cloud';
+            previewUrl.textContent = `${name}.${ext}`;
+        }
+        updatePreview();
+
         function updateProgress(percent, text) {
-            const container = document.getElementById('statusContainer');
-            container.classList.remove('hidden');
+            document.getElementById('deployStatus').classList.remove('hidden');
             document.getElementById('progressBar').style.width = percent + '%';
             document.getElementById('statusText').textContent = text;
         }
 
-        // ============ DEPLOY FUNCTION ============
         document.getElementById('deployBtn').addEventListener('click', async function() {
             const token = document.getElementById('githubToken').value.trim();
             const repo = document.getElementById('repoName').value.trim();
             const branch = document.getElementById('repoBranch').value;
             const platform = document.getElementById('hostingPlatform').value;
-            const subdomain = customSubdomain.value.trim() || 'paltidxr';
-            const domain = customDomain.value.trim() || 'paltidxr';
-            const ext = document.querySelector('.domain-option.active')?.dataset.domain || 'cloud';
-            const fullDomain = `${subdomain}.${domain}.${ext}`;
+            const project = projectName.value.trim() || 'project';
+            const ext = document.querySelector('.domain-option.active')?.dataset.domain || 'host.cloud';
 
-            // Validations
             if (!token || token.length < 20) {
                 showToast('Please enter a valid GitHub token.', 'error');
                 return;
@@ -416,62 +588,77 @@
                 return;
             }
 
-            // Disable button and show loading
             this.innerHTML = '<span class="loading-spinner"></span> Deploying...';
             this.disabled = true;
+            document.getElementById('deployResult').classList.add('hidden');
 
             try {
-                // Step 1: Validate Token
                 updateProgress(10, 'Validating GitHub token...');
-                await new Promise(r => setTimeout(r, 500));
+                await sleep(500);
 
-                // Step 2: Check Repository
                 updateProgress(25, `Checking repository ${repo}...`);
-                await new Promise(r => setTimeout(r, 700));
+                await sleep(700);
 
-                // Step 3: Verify branch
                 updateProgress(40, `Verifying branch ${branch}...`);
-                await new Promise(r => setTimeout(r, 600));
+                await sleep(600);
 
-                // Step 4: Connect to hosting platform
                 updateProgress(55, `Connecting to ${platform}...`);
-                await new Promise(r => setTimeout(r, 800));
+                await sleep(800);
 
-                // Step 5: Deploy
                 updateProgress(70, `Deploying to ${platform}...`);
-                await new Promise(r => setTimeout(r, 1000));
+                await sleep(1000);
 
-                // Step 6: Configure domain
-                updateProgress(85, `Configuring domain ${fullDomain}...`);
-                await new Promise(r => setTimeout(r, 700));
+                updateProgress(85, `Configuring domain ${project}.${ext}...`);
+                await sleep(700);
 
-                // Step 7: Finalize
                 updateProgress(95, 'Finalizing deployment...');
-                await new Promise(r => setTimeout(r, 500));
+                await sleep(500);
 
-                // Complete
                 updateProgress(100, 'Deployment complete!');
 
-                // Show result
+                const fullDomain = `${project}.${ext}`;
                 const deployedUrl = `https://${fullDomain}`;
                 document.getElementById('deployedUrl').textContent = deployedUrl;
-                document.getElementById('deployTime').textContent = new Date().toLocaleString();
-                document.getElementById('deployPlatform').textContent = platform.charAt(0).toUpperCase() + platform.slice(1);
-                document.getElementById('deployBranch').textContent = branch;
-                document.getElementById('resultArea').classList.remove('hidden');
+                document.getElementById('deployResult').classList.remove('hidden');
 
                 showToast(`✅ Successfully deployed to ${fullDomain}!`, 'success');
+                fetchStats();
 
             } catch (error) {
                 showToast('Deployment failed: ' + error.message, 'error');
-                this.innerHTML = '<i class="fa-solid fa-rocket mr-2"></i> Deploy Project';
+            } finally {
+                this.innerHTML = '<i class="fa-solid fa-rocket mr-2"></i> Deploy to host.cloud';
                 this.disabled = false;
-                updateProgress(0, 'Deployment failed');
             }
         });
 
+        function resetDeploy() {
+            document.getElementById('deployResult').classList.add('hidden');
+            document.getElementById('deployStatus').classList.add('hidden');
+            document.getElementById('progressBar').style.width = '0%';
+        }
+
+        function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+        // ============ FETCH STATS ============
+        async function fetchStats() {
+            try {
+                const res = await fetch('/health');
+                const data = await res.json();
+                if (data.scripts !== undefined) {
+                    document.getElementById('scriptCount').textContent = data.scripts || 0;
+                }
+                if (data.deploys !== undefined) {
+                    document.getElementById('deployCount').textContent = data.deploys || 0;
+                }
+                if (data.totalDomains !== undefined) {
+                    document.getElementById('domainCount').textContent = data.totalDomains || 0;
+                }
+            } catch (e) { console.log('Stats fetch failed'); }
+        }
+
         // ============ INIT ============
-        updatePreview();
+        fetchStats();
     </script>
 </body>
 </html>
