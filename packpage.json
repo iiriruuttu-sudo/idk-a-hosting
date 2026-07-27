@@ -1,12 +1,13 @@
 {
-  "name": "paltidxr-deploy",
-  "version": "1.0.0",
-  "description": "PaltidxR Deploy - Deploy GitHub repositories",
+  "name": "host-cloud",
+  "version": "2.0.0",
+  "description": "Host Cloud - Script Hosting & Deploy Platform",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
+    "dotenv": "^16.0.3",
     "express": "^4.18.2"
   },
   "engines": {
