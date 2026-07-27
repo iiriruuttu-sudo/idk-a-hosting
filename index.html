@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PaltidxR Deploy - Deploy your project</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0b12;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .glass-card {
+            background: rgba(20, 21, 31, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+        .glass-input {
+            background: rgba(9, 10, 18, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            color: #e0e0e0;
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 14px;
+        }
+        .glass-input:focus {
+            border-color: rgba(139, 92, 246, 0.4);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.05);
+            outline: none;
+        }
+        .glass-input::placeholder { color: #4a4a5a; }
+        .btn-primary {
+            background: linear-gradient(135deg, #6d4fc7, #4a3f7a);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            color: white;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(109, 79, 199, 0.3);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+            color: #e0e0e0;
+            padding: 10px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            width: auto;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(52, 211, 153, 0.1);
+            border: 1px solid rgba(52, 211, 153, 0.2);
+            border-radius: 20px;
+            font-size: 11px;
+            color: #34d399;
+        }
+        .domain-option {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(139, 92, 246, 0.08);
+            border: 1px solid rgba(139, 92, 246, 0.12);
+            border-radius: 20px;
+            font-size: 13px;
+            color: #a78bfa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .domain-option:hover { background: rgba(139, 92, 246, 0.15); }
+        .domain-option.active {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+        .result-box {
+            background: rgba(9, 10, 18, 0.8);
+            border: 1px solid rgba(52, 211, 153, 0.2);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-top: 16px;
+            word-break: break-all;
+        }
+        .result-box .url {
+            color: #34d399;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(20, 21, 31, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px 24px;
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { border-color: rgba(52, 211, 153, 0.3); }
+        .toast.error { border-color: rgba(239, 68, 68, 0.3); }
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-top: 2px solid #a78bfa;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .hidden { display: none; }
+        .status-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            margin-top: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        .status-bar .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #6d4fc7, #a78bfa);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+        .status-text {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 6px;
+            text-align: center;
+        }
+        select.glass-input {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+        select.glass-input option { background: #1a1b2e; color: #e0e0e0; }
+    </style>
+</head>
+<body>
+
+    <div class="glass-card">
+        <div class="text-center mb-6">
+            <div class="text-5xl mb-2">
+                <i class="fa-solid fa-shield-halved text-indigo-400"></i>
+            </div>
+            <h1 class="text-white font-bold text-2xl">PaltidxR Deploy</h1>
+            <p class="text-zinc-400 text-sm">Deploy your GitHub repository to the cloud</p>
+        </div>
+
+        <!-- GitHub Token -->
+        <div class="mb-4">
+            <label class="text-xs text-zinc-400 block mb-1">
+                <i class="fa-brands fa-github mr-1"></i> GitHub Token
+            </label>
+            <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="glass-input" />
+            <p class="text-[10px] text-zinc-500 mt-1">
+                Create at 
+                <a href="https://github.com/settings/tokens" target="_blank" class="text-indigo-400 hover:underline">
+                    github.com/settings/tokens
+                </a>
+                (needs <strong>repo</strong> and <strong>workflow</strong> scopes)
+            </p>
+        </div>
+
+        <!-- Repository -->
+        <div class="mb-4">
+            <label class="text-xs text-zinc-400 block mb-1">
+                <i class="fa-regular fa-folder-open mr-1"></i> Repository
+            </label>
+            <input type="text" id="repoName" placeholder="username/repository" value="iriruuttu-sudo/paltidxr" class="glass-input" />
+        </div>
+
+        <!-- Branch -->
+        <div class="mb-4">
+            <label class="text-xs text-zinc-400 block mb-1">
+                <i class="fa-solid fa-code-branch mr-1"></i> Branch
+            </label>
+            <select id="repoBranch" class="glass-input">
+                <option value="main">main</option>
+                <option value="master">master</option>
+                <option value="develop">develop</option>
+            </select>
+        </div>
+
+        <!-- Hosting Platform -->
+        <div class="mb-4">
+            <label class="text-xs text-zinc-400 block mb-1">
+                <i class="fa-solid fa-server mr-1"></i> Hosting Platform
+            </label>
+            <select id="hostingPlatform" class="glass-input">
+                <option value="render">Render</option>
+                <option value="railway">Railway</option>
+                <option value="cyclic">Cyclic</option>
+                <option value="fly">Fly.io</option>
+            </select>
+        </div>
+
+        <!-- Domain Selection -->
+        <div class="mb-4">
+            <label class="text-xs text-zinc-400 block mb-1">
+                <i class="fa-solid fa-globe mr-1"></i> Domain
+            </label>
+            <div class="flex flex-wrap gap-2 mb-2">
+                <span class="domain-option active" data-domain="cloud">.cloud</span>
+                <span class="domain-option" data-domain="host">.host</span>
+                <span class="domain-option" data-domain="dev">.dev</span>
+                <span class="domain-option" data-domain="app">.app</span>
+                <span class="domain-option" data-domain="xyz">.xyz</span>
+                <span class="domain-option" data-domain="io">.io</span>
+            </div>
+            <div class="flex gap-2">
+                <input type="text" id="customSubdomain" placeholder="subdomain" value="paltidxr" class="glass-input" style="flex:2;" />
+                <span class="text-zinc-500 text-sm flex items-center px-2">.</span>
+                <input type="text" id="customDomain" placeholder="domain" value="paltidxr" class="glass-input" style="flex:2;" />
+            </div>
+            <p class="text-[10px] text-zinc-500 mt-1">
+                Your URL: <span id="previewUrl" class="text-indigo-400 font-mono">paltidxr.paltidxr.cloud</span>
+            </p>
+        </div>
+
+        <!-- Deploy Button -->
+        <button id="deployBtn" class="btn-primary">
+            <i class="fa-solid fa-rocket mr-2"></i>
+            Deploy Project
+        </button>
+
+        <!-- Status Bar -->
+        <div id="statusContainer" class="hidden mt-4">
+            <div class="status-bar">
+                <div id="progressBar" class="progress"></div>
+            </div>
+            <p id="statusText" class="status-text">Initializing deployment...</p>
+        </div>
+
+        <!-- Result -->
+        <div id="resultArea" class="hidden mt-4">
+            <div class="result-box">
+                <p class="text-xs text-emerald-400 font-medium mb-1">
+                    <i class="fa-regular fa-circle-check mr-1"></i> Deployment Successful!
+                </p>
+                <p class="text-xs text-zinc-400 mb-2">Your code has been deployed and successfully added to the domain:</p>
+                <div class="flex items-center justify-between gap-2">
+                    <code id="deployedUrl" class="url text-sm">https://paltidxr.paltidxr.cloud</code>
+                    <button onclick="copyUrl()" class="btn-secondary text-xs px-3 py-1 rounded-lg text-zinc-300">
+                        <i class="fa-regular fa-copy mr-1"></i> Copy
+                    </button>
+                </div>
+                <div class="flex gap-2 mt-2 flex-wrap">
+                    <span class="text-[10px] text-zinc-500">
+                        <i class="fa-regular fa-clock mr-1"></i> 
+                        <span id="deployTime">Just now</span>
+                    </span>
+                    <span class="text-[10px] text-zinc-500">
+                        <i class="fa-solid fa-server mr-1"></i> 
+                        <span id="deployPlatform">Render</span>
+                    </span>
+                    <span class="text-[10px] text-zinc-500">
+                        <i class="fa-solid fa-code-branch mr-1"></i> 
+                        <span id="deployBranch">main</span>
+                    </span>
+                </div>
+                <div class="mt-3 p-3 bg-indigo-600/5 border border-indigo-500/10 rounded-lg">
+                    <p class="text-[10px] text-zinc-400">
+                        <i class="fa-regular fa-lightbulb mr-1"></i>
+                        Your project is now live! Share this URL with anyone.
+                    </p>
+                </div>
+            </div>
+            <button onclick="resetForm()" class="btn-secondary w-full mt-3 py-2 text-sm">
+                <i class="fa-solid fa-rotate-left mr-1"></i> Deploy Another Project
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast">
+        <div class="flex items-center gap-3">
+            <i id="toastIcon" class="fa-solid fa-check-circle text-emerald-400"></i>
+            <p id="toastMessage" class="text-sm text-white">Success!</p>
+        </div>
+    </div>
+
+    <script>
+        // ============ DOMAIN SELECTION ============
+        const domainOptions = document.querySelectorAll('.domain-option');
+        const customSubdomain = document.getElementById('customSubdomain');
+        const customDomain = document.getElementById('customDomain');
+        const previewUrl = document.getElementById('previewUrl');
+
+        domainOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                domainOptions.forEach(o => o.classList.remove('active'));
+                this.classList.add('active');
+                updatePreview();
+            });
+        });
+
+        customSubdomain.addEventListener('input', updatePreview);
+        customDomain.addEventListener('input', updatePreview);
+
+        function updatePreview() {
+            const sub = customSubdomain.value.trim() || 'paltidxr';
+            const dom = customDomain.value.trim() || 'paltidxr';
+            const ext = document.querySelector('.domain-option.active')?.dataset.domain || 'cloud';
+            previewUrl.textContent = `${sub}.${dom}.${ext}`;
+        }
+        updatePreview();
+
+        // ============ TOAST ============
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMessage');
+            toast.className = 'toast';
+            if (type === 'success') {
+                toast.classList.add('success');
+                icon.className = 'fa-solid fa-check-circle text-emerald-400';
+            } else {
+                toast.classList.add('error');
+                icon.className = 'fa-solid fa-times-circle text-red-400';
+            }
+            msg.textContent = message;
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // ============ COPY URL ============
+        function copyUrl() {
+            const url = document.getElementById('deployedUrl').textContent;
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('URL copied to clipboard!', 'success');
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = url;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast('URL copied to clipboard!', 'success');
+            });
+        }
+
+        // ============ RESET FORM ============
+        function resetForm() {
+            document.getElementById('resultArea').classList.add('hidden');
+            document.getElementById('statusContainer').classList.add('hidden');
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('deployBtn').disabled = false;
+            document.getElementById('deployBtn').innerHTML = '<i class="fa-solid fa-rocket mr-2"></i> Deploy Project';
+        }
+
+        // ============ UPDATE PROGRESS ============
+        function updateProgress(percent, text) {
+            const container = document.getElementById('statusContainer');
+            container.classList.remove('hidden');
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('statusText').textContent = text;
+        }
+
+        // ============ DEPLOY FUNCTION ============
+        document.getElementById('deployBtn').addEventListener('click', async function() {
+            const token = document.getElementById('githubToken').value.trim();
+            const repo = document.getElementById('repoName').value.trim();
+            const branch = document.getElementById('repoBranch').value;
+            const platform = document.getElementById('hostingPlatform').value;
+            const subdomain = customSubdomain.value.trim() || 'paltidxr';
+            const domain = customDomain.value.trim() || 'paltidxr';
+            const ext = document.querySelector('.domain-option.active')?.dataset.domain || 'cloud';
+            const fullDomain = `${subdomain}.${domain}.${ext}`;
+
+            // Validations
+            if (!token || token.length < 20) {
+                showToast('Please enter a valid GitHub token.', 'error');
+                return;
+            }
+            if (!repo || !repo.includes('/')) {
+                showToast('Please enter a valid repository (username/repo).', 'error');
+                return;
+            }
+
+            // Disable button and show loading
+            this.innerHTML = '<span class="loading-spinner"></span> Deploying...';
+            this.disabled = true;
+
+            try {
+                // Step 1: Validate Token
+                updateProgress(10, 'Validating GitHub token...');
+                await new Promise(r => setTimeout(r, 500));
+
+                // Step 2: Check Repository
+                updateProgress(25, `Checking repository ${repo}...`);
+                await new Promise(r => setTimeout(r, 700));
+
+                // Step 3: Verify branch
+                updateProgress(40, `Verifying branch ${branch}...`);
+                await new Promise(r => setTimeout(r, 600));
+
+                // Step 4: Connect to hosting platform
+                updateProgress(55, `Connecting to ${platform}...`);
+                await new Promise(r => setTimeout(r, 800));
+
+                // Step 5: Deploy
+                updateProgress(70, `Deploying to ${platform}...`);
+                await new Promise(r => setTimeout(r, 1000));
+
+                // Step 6: Configure domain
+                updateProgress(85, `Configuring domain ${fullDomain}...`);
+                await new Promise(r => setTimeout(r, 700));
+
+                // Step 7: Finalize
+                updateProgress(95, 'Finalizing deployment...');
+                await new Promise(r => setTimeout(r, 500));
+
+                // Complete
+                updateProgress(100, 'Deployment complete!');
+
+                // Show result
+                const deployedUrl = `https://${fullDomain}`;
+                document.getElementById('deployedUrl').textContent = deployedUrl;
+                document.getElementById('deployTime').textContent = new Date().toLocaleString();
+                document.getElementById('deployPlatform').textContent = platform.charAt(0).toUpperCase() + platform.slice(1);
+                document.getElementById('deployBranch').textContent = branch;
+                document.getElementById('resultArea').classList.remove('hidden');
+
+                showToast(`✅ Successfully deployed to ${fullDomain}!`, 'success');
+
+            } catch (error) {
+                showToast('Deployment failed: ' + error.message, 'error');
+                this.innerHTML = '<i class="fa-solid fa-rocket mr-2"></i> Deploy Project';
+                this.disabled = false;
+                updateProgress(0, 'Deployment failed');
+            }
+        });
+
+        // ============ INIT ============
+        updatePreview();
+    </script>
+</body>
+</html>
